@@ -1,4 +1,4 @@
-#RIGID
+# RIGID
 
 Rigid Body Demonstration for the TI84+CE 
 
