@@ -27,6 +27,8 @@ typedef struct {
 	int ymin,ymax;
 } Group;
 
+extern void solveConstraints(void);
+
 void buildBoundingBoxes(void); 
 
 #define overlap(a,b) ((group[a].xmax>group[b].xmin)&&(group[b].xmax>group[a].xmin)&&(group[a].ymax>group[b].ymin)&&(group[b].ymax>group[a].ymin))
@@ -34,10 +36,10 @@ void buildBoundingBoxes(void);
 #define vlen 13
 extern Vertex vert[vlen]; 
 
-#define clen 17
+#define clen 18
 extern Constraint constraint[clen]; 
 
-#define glen 4
+#define glen 3
 extern Group group[glen]; 
 
 #endif

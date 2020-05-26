@@ -26,14 +26,14 @@ void main(void)
 {
     bool cont = true; 
 	initialize(); 
+	kb_Scan();
 	
 	while(cont) { 
 		
-		startTimer(); 
-		step(); 
-		stopTimer(); 
-		kb_Scan();
 		
+		step(); 
+		
+		kb_Scan();
 		//while(!kb_IsDown(kb_KeyEnter)&&!kb_IsDown(kb_KeyClear)) {
 			drawVerts = kb_IsDown(kb_Key1);
 			drawBBoxes = kb_IsDown(kb_Key2);
@@ -56,6 +56,8 @@ void initialize() {
 	drawVerts = false; 
 	drawBBoxes = false; 
 	
+	initFxMul(); 
+	
 	for(i = 0;i<vlen;i++) { 
 		vert[i].p.x = itofx(vert[i].p.x);
 		vert[i].p.y = itofx(vert[i].p.y);
@@ -73,12 +75,9 @@ void initialize() {
 	
 		dist.x = v1->p.x - v0->p.x;
 		dist.y = v1->p.y - v0->p.y;
-	
-		normalize(&dist); 
+		normalize(&dist);
 		constraint[i].dir = dist;
 	}
-	
-	 
 	
 	for(i = 0;i<glen;i++) { 
 		uint8_t j;
@@ -109,6 +108,7 @@ void initialize() {
 
 void step() { 
 	uint8_t i,j;
+	startTimer();
 	
 	for(i = 0;i<vlen;i++) { 
 		// something like velocity verlet
@@ -121,10 +121,8 @@ void step() {
 		} 
 	}
 		
-	for(i = 0;i<clen;i++) { 
-		solveConstraint(i); 
-	} 
-		
+	solveConstraints(); 
+	
 	buildBoundingBoxes();
 		
 	for(i = 0;i < glen-1;i++) { 
@@ -134,7 +132,7 @@ void step() {
 			} 
 		} 
 	}
-	
+	stopTimer();
 } 
 
 void draw() { 

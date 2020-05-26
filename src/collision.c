@@ -1,11 +1,12 @@
 #include <stdlib.h> 
 #include <stdint.h> 
+
 #include "collision.h" 
 #include "object.h" 
 #include "vectormath.h" 
 
-#define RESTITUTION 384
-#define FRICTION 128
+#define RESTITUTION 448
+#define FRICTION 240
 
 typedef struct { 
 	int depth; // penetration depth
@@ -15,48 +16,16 @@ typedef struct {
 
 static AxisProjection projectGroupAxis(uint8_t g,uint8_t c); 
 
-void solveConstraint(uint8_t i) { 
-	int length,dlen;
-	uint8_t k;
-	Vec2 dist; 
-	Vertex* v0; 
-	Vertex* v1;
-	
-	
-	v0 = &vert[constraint[i].v0];
-	v1 = &vert[constraint[i].v1]; 
-	if(v0->free||v1->free) {
-		k = constraint[i].k;
-	
-		dist.x = v1->p.x - v0->p.x;
-		dist.y = v1->p.y - v0->p.y;
-	
-		length = normalize(&dist); 
-		constraint[i].dir = dist; 
-	
-	 
-		dlen = length - constraint[i].length; 
-		
-		dist.x = fxMul(dlen,dist.x)>>1; 
-		dist.y = fxMul(dlen,dist.y)>>1;
-		
-		if(v0->free) { 
-			v0->p.x += dist.x;
-			v0->p.y += dist.y;
-		} 
-	
-		if(v1->free) {
-			v1->p.x -= dist.x;
-			v1->p.y -= dist.y;
-		} 
-	} 
-} 
-
 // finds axis of least penetration and collides about it
 void collideGroups(uint8_t g1,uint8_t g2) { 
 	uint8_t c; 
 	AxisProjection temp; 
 	AxisProjection minaxis; 
+	int t; 
+	Vec2 d,dir,n;
+	Vertex* p;
+	Vertex* v0;
+	Vertex* v1;
 	
 	c = group[g1].cstart;
 	minaxis = projectGroupAxis(g2,c);
@@ -82,28 +51,17 @@ void collideGroups(uint8_t g1,uint8_t g2) {
 		}
 	}
 		
-	{ 
-	int t; 
-	Vec2 d,dir,n;
-	Vertex* p;
-	Vertex* v0;
-	Vertex* v1;
-	 
 	p = &vert[minaxis.v]; 
 	v0 = &vert[constraint[minaxis.c].v0];
 	v1 = &vert[constraint[minaxis.c].v1];
 	dir = constraint[minaxis.c].dir; 
-	
-	d.x = p->p.x - v0->p.x; 
-	d.y = p->p.y - v0->p.y;
-	t = (256*dotProduct(d,dir)) / constraint[minaxis.c].length; 
 	
 	minaxis.depth = fxMul(RESTITUTION,minaxis.depth); 
 	n.x = fxMul(dir.y,minaxis.depth); 
 	n.y = 0-fxMul(dir.x,minaxis.depth);
 	
 	if(p->free) { 
-		int orth = fxMul(FRICTION,dotProduct(p->v,dir)); 
+		int orth = fxMul(FRICTION,dotProduct(p->v,dir));
 		p->v.x = fxMul(dir.x,orth);
 		p->v.y = fxMul(dir.y,orth);
 		p->x = p->p;
@@ -111,22 +69,27 @@ void collideGroups(uint8_t g1,uint8_t g2) {
 		p->p.y -= n.y;
 	} 
 	
-	if(v0->free) {
-		v0->v.x = 0;
-		v0->v.y = 0;
-		v0->x = v0->p;
-		v0->p.x += fxMul(n.x,256-t);
-		v0->p.y += fxMul(n.y,256-t);
-	} 
+	if(v0->free||v1->free) { 
+		d.x = p->p.x - v0->p.x; 
+		d.y = p->p.y - v0->p.y;
+		t = (256*dotProduct(d,dir)) / constraint[minaxis.c].length; 
+		
+		if(v0->free) {
+			v0->v.x = 0;
+			v0->v.y = 0;
+			v0->x = v0->p;
+			v0->p.x += fxMul(n.x,256-t);
+			v0->p.y += fxMul(n.y,256-t);
+		} 
 	
-	if(v1->free) {
-		v1->v.x = 0;
-		v1->v.y = 0;
-		v1->x = v1->p;
-		v1->p.x += fxMul(n.x,t);
-		v1->p.y += fxMul(n.y,t);
-	} 
-	} 
+		if(v1->free) {
+			v1->v.x = 0;
+			v1->v.y = 0;
+			v1->x = v1->p;
+			v1->p.x += fxMul(n.x,t);
+			v1->p.y += fxMul(n.y,t);
+		} 
+	}	
 } 
 
 AxisProjection projectGroupAxis(uint8_t g,uint8_t c) { 
@@ -147,7 +110,7 @@ AxisProjection projectGroupAxis(uint8_t g,uint8_t c) {
 	d.y = v.y - v0.y;
 	a.depth = dotProduct(d,n); 
 	
-	for(i=group[g].vstart+1;i<=group[g].vend;i++) { 
+	for(i=a.v+1;i<=group[g].vend;i++) { 
 		v = vert[i].p;
 		d.x = v.x - v0.x;
 		d.y = v.y - v0.y;

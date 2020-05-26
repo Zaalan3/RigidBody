@@ -21,6 +21,8 @@ int fxtoi(int x);
 
 int sqrtInt(int x); 
 
+void initFxMul(void);
+ 
 int fxMul(int x,int y); 
 
 #endif

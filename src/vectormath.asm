@@ -1,8 +1,11 @@
-
+xdef _initFxMul
 xdef _fxMul 
 xdef _fxtoi 
 xdef _sqrtInt 
-;xdef _normalize
+xdef _normalize
+xdef _fixedHLmulBC
+
+_fixedHLmulBC equ 0E30A00h 
 
 _fxtoi: 
 	pop bc 
@@ -18,6 +21,13 @@ _fxtoi:
 	ld h,d 
 	ld l,e 
 	ret 
+	
+_initFxMul: 
+	ld hl,fixedHLmulBC
+	ld bc,endfxmul-fixedHLmulBC
+	ld de,_fixedHLmulBC 
+	ldir 
+	ret 
 
 _fxMul: 
 	pop de 
@@ -26,25 +36,26 @@ _fxMul:
 	push de 
 	push de 
 	push de 
+	jp _fixedHLmulBC
 fixedHLmulBC:
 	ld a,0B7h
 	ex de,hl 
 	or a,a 
 	sbc hl,hl 
 	sbc hl,de 
-	jp m,noswapHLDE
+	jp m,noswapHLDE-fixedHLmulBC+_fixedHLmulBC
 	ex de,hl 
 	xor a,080h
 noswapHLDE: 
 	or a,a 
 	sbc hl,hl 
 	sbc hl,bc 
-	jp m,noswapHLBC
+	jp m,noswapHLBC-fixedHLmulBC+_fixedHLmulBC
 	push hl 
 	pop bc
     xor a,080h
 noswapHLBC:  
-	ld (MultSMC),a
+	ld (MultSMC-fixedHLmulBC+_fixedHLmulBC),a
 	or a,a 
 	sbc hl,hl 
 	
@@ -87,7 +98,8 @@ MultSMC: or a,a
 	sbc hl,hl 
 	sbc hl,de 
 	ret
-	
+endfxmul:
+	nop 
 	
 ;https://www.cemetech.net/forum/viewtopic.php?p=253204
 _sqrtInt:
@@ -100,7 +112,7 @@ Sqrt24:
         dec     sp      ; (sp) = ?
         push    hl      ; (sp) = ?uhl
         dec     sp      ; (sp) = ?uhl?
-        pop     iy      ; (sp) = ?u, uix = hl?
+        pop     iy      ; (sp) = ?u, uiy = hl?
         dec     sp      ; (sp) = ?u?
         pop     af      ; af = u?
         or      a,a
@@ -128,3 +140,85 @@ Sqrt24Skip:
         ex      de,hl
         ret
 		
+	
+_normalize: 
+	pop de 
+	pop iy 
+	push de
+	push de
+	
+	ld bc,(iy+0) 
+	or a,a 
+	sbc hl,hl 
+	add hl,bc 
+	call _fixedHLmulBC 
+	push hl 
+	ld bc,(iy+3) 
+	or a,a 
+	sbc hl,hl 
+	add hl,bc
+	call _fixedHLmulBC 
+	pop de 
+	add hl,de 
+	push iy 
+	call Sqrt24
+	add hl,hl
+	add hl,hl
+	add hl,hl
+	add hl,hl
+	pop iy 
+	
+	push hl 
+	push hl 
+	pop bc 
+	
+	ld de,65536 
+DivideDEBC:
+	xor	a,a
+	sbc	hl,hl
+	sbc	hl,bc
+	jp	p,next0
+	push	hl
+	pop	bc
+	inc	a
+next0:
+	or	a,a
+	sbc	hl,hl
+	sbc	hl,de
+	jp	m,next1
+	ex	de,hl
+	inc	a
+next1:
+	add	hl,de
+	rra
+	ld	a,24
+loop:
+	ex	de,hl
+	adc	hl,hl
+	ex	de,hl
+	adc	hl,hl
+	add	hl,bc
+	jr	c,spill
+	sbc	hl,bc
+spill:
+	dec	a
+	jr	nz,loop
+
+	ex	de,hl
+	adc	hl,hl
+	jr	c,enddiv
+	ex	de,hl
+	sbc	hl,hl
+	sbc	hl,de
+
+enddiv: 	
+	push hl 
+	ld	bc,(iy+0) 
+	call _fixedHLmulBC
+	ld (iy+0),hl 
+	pop hl 
+	ld bc,(iy+3) 
+	call _fixedHLmulBC
+	ld (iy+3),hl 
+	pop hl 
+	ret
