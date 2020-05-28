@@ -1,11 +1,8 @@
-xdef _initFxMul
 xdef _fxMul 
 xdef _fxtoi 
 xdef _sqrtInt 
 xdef _normalize
 xdef _fixedHLmulBC
-
-_fixedHLmulBC equ 0E30A00h 
 
 _fxtoi: 
 	pop bc 
@@ -22,13 +19,6 @@ _fxtoi:
 	ld l,e 
 	ret 
 	
-_initFxMul: 
-	ld hl,fixedHLmulBC
-	ld bc,endfxmul-fixedHLmulBC
-	ld de,_fixedHLmulBC 
-	ldir 
-	ret 
-
 _fxMul: 
 	pop de 
 	pop hl 
@@ -36,26 +26,25 @@ _fxMul:
 	push de 
 	push de 
 	push de 
-	jp _fixedHLmulBC
-fixedHLmulBC:
+_fixedHLmulBC:
 	ld a,0B7h
 	ex de,hl 
 	or a,a 
 	sbc hl,hl 
 	sbc hl,de 
-	jp m,noswapHLDE-fixedHLmulBC+_fixedHLmulBC
+	jp m,noswapHLDE
 	ex de,hl 
 	xor a,080h
 noswapHLDE: 
 	or a,a 
 	sbc hl,hl 
 	sbc hl,bc 
-	jp m,noswapHLBC-fixedHLmulBC+_fixedHLmulBC
+	jp m,noswapHLBC
 	push hl 
 	pop bc
     xor a,080h
 noswapHLBC:  
-	ld (MultSMC-fixedHLmulBC+_fixedHLmulBC),a
+	ld (MultSMC),a
 	or a,a 
 	sbc hl,hl 
 	

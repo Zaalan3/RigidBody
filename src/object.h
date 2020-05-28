@@ -33,13 +33,13 @@ void buildBoundingBoxes(void);
 
 #define overlap(a,b) ((group[a].xmax>group[b].xmin)&&(group[b].xmax>group[a].xmin)&&(group[a].ymax>group[b].ymin)&&(group[b].ymax>group[a].ymin))
 						
-#define vlen 13
+#define vlen 12
 extern Vertex vert[vlen]; 
 
-#define clen 18
+#define clen 15
 extern Constraint constraint[clen]; 
 
-#define glen 3
+#define glen 4
 extern Group group[glen]; 
 
 #endif

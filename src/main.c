@@ -55,9 +55,7 @@ void initialize() {
 	
 	drawVerts = false; 
 	drawBBoxes = false; 
-	
-	initFxMul(); 
-	
+		
 	for(i = 0;i<vlen;i++) { 
 		vert[i].p.x = itofx(vert[i].p.x);
 		vert[i].p.y = itofx(vert[i].p.y);
@@ -108,7 +106,7 @@ void initialize() {
 
 void step() { 
 	uint8_t i,j;
-	startTimer();
+	
 	
 	for(i = 0;i<vlen;i++) { 
 		// something like velocity verlet
@@ -120,7 +118,8 @@ void step() {
 			vert[i].p.y += vert[i].v.y;
 		} 
 	}
-		
+	
+	startTimer();	
 	solveConstraints(); 
 	
 	buildBoundingBoxes();

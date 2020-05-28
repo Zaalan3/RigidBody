@@ -61,9 +61,6 @@ void collideGroups(uint8_t g1,uint8_t g2) {
 	n.y = 0-fxMul(dir.x,minaxis.depth);
 	
 	if(p->free) { 
-		int orth = fxMul(FRICTION,dotProduct(p->v,dir));
-		p->v.x = fxMul(dir.x,orth);
-		p->v.y = fxMul(dir.y,orth);
 		p->x = p->p;
 		p->p.x -= n.x;
 		p->p.y -= n.y;
