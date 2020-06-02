@@ -49,25 +49,98 @@ noswapHLBC:
 	sbc hl,hl 
 	
 	ld a,b 
-	ld b,8 
-loop2: 
+	
+	rla 
+	jr nc,cont1
+	add hl,de 
+cont1:
+	add hl,hl
+	
 	rla 
 	jr nc,cont2
 	add hl,de 
 cont2:
-	add hl,hl 
-	djnz loop2
+	add hl,hl
 	
-	ld a,c 
-	ld b,7 
-
-loop3: 
 	rla 
 	jr nc,cont3
 	add hl,de 
 cont3:
-	add hl,hl 
-	djnz loop3	
+	add hl,hl
+	
+	rla 
+	jr nc,cont4
+	add hl,de 
+cont4:
+	add hl,hl
+	
+	rla 
+	jr nc,cont5
+	add hl,de 
+cont5:
+	add hl,hl
+	
+	rla 
+	jr nc,cont6
+	add hl,de 
+cont6:
+	add hl,hl
+	
+	rla 
+	jr nc,cont7
+	add hl,de 
+cont7:
+	add hl,hl
+	
+	rla 
+	jr nc,cont8
+	add hl,de 
+cont8:
+	add hl,hl
+	
+	ld a,c 
+
+	rla 
+	jr nc,cont9
+	add hl,de 
+cont9:
+	add hl,hl
+	
+	rla 
+	jr nc,cont10
+	add hl,de 
+cont10:
+	add hl,hl
+	
+	rla 
+	jr nc,cont11
+	add hl,de 
+cont11:
+	add hl,hl
+	
+	rla 
+	jr nc,cont12
+	add hl,de 
+cont12:
+	add hl,hl
+	
+	rla 
+	jr nc,cont13
+	add hl,de 
+cont13:
+	add hl,hl
+	
+	rla 
+	jr nc,cont14
+	add hl,de 
+cont14:
+	add hl,hl
+	
+	rla 
+	jr nc,cont15
+	add hl,de 
+cont15:
+	add hl,hl
 	
 	rla 
 	jr nc,shiftDown 
@@ -87,8 +160,7 @@ MultSMC: or a,a
 	sbc hl,hl 
 	sbc hl,de 
 	ret
-endfxmul:
-	nop 
+
 	
 ;https://www.cemetech.net/forum/viewtopic.php?p=253204
 _sqrtInt:

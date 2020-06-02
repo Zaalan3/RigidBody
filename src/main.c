@@ -17,6 +17,8 @@ void initialize();
 void step(); 
 void draw();
 
+AxisProjection penAxis; 
+
 #define startTimer() timer_1_Counter = 0; \
 					timer_Control = TIMER1_ENABLE|TIMER1_CPU|TIMER1_UP;
 #define stopTimer() timer_Control = TIMER1_DISABLE; 
@@ -24,23 +26,24 @@ void draw();
 
 void main(void)
 {
-    bool cont = true; 
+    bool current,last;
 	initialize(); 
 	kb_Scan();
+	last = false;
 	
-	while(cont) { 
-		
-		
-		step(); 
-		
+	while(!kb_IsDown(kb_KeyClear)) { 
+		 
+		current = kb_IsDown(kb_KeyEnter); 
+		startTimer();
+		//if(current&&(!last)) 
+			step(); 
+		stopTimer();
+		last = current;
+	
+		drawVerts = kb_IsDown(kb_Key1);
+		drawBBoxes = kb_IsDown(kb_Key2);
+		draw(); 
 		kb_Scan();
-		//while(!kb_IsDown(kb_KeyEnter)&&!kb_IsDown(kb_KeyClear)) {
-			drawVerts = kb_IsDown(kb_Key1);
-			drawBBoxes = kb_IsDown(kb_Key2);
-			draw(); 
-			kb_Scan();
-		//} 
-		cont = !kb_IsDown(kb_KeyClear);
 	} 
 	
 	gfx_End(); 
@@ -107,7 +110,8 @@ void initialize() {
 void step() { 
 	uint8_t i,j;
 	
-	
+	penAxis.depth = 0;
+		
 	for(i = 0;i<vlen;i++) { 
 		// something like velocity verlet
 		if(vert[i].free) { 
@@ -119,11 +123,9 @@ void step() {
 		} 
 	}
 	
-	startTimer();	
-	solveConstraints(); 
-	
+	solveConstraints();
 	buildBoundingBoxes();
-		
+	
 	for(i = 0;i < glen-1;i++) { 
 		for(j=i+1;j<glen;j++) { 
 			if(overlap(i,j)) { 
@@ -131,7 +133,7 @@ void step() {
 			} 
 		} 
 	}
-	stopTimer();
+
 } 
 
 void draw() { 
@@ -164,8 +166,7 @@ void draw() {
 			gfx_Circle(fxtoi(vert[i].p.x)*2,fxtoi(vert[i].p.y)*2,4); 
 		} 
 	}
-	 
-	 
+		 
 	gfx_SetTextXY(20,10);
 	gfx_PrintUInt(getTimer(),0);
 	
@@ -175,6 +176,6 @@ void draw() {
 	gfx_PrintUInt(time/10,1);
 	gfx_PrintChar('.'); 
 	gfx_PrintUInt(time%10,1);
-	
+		
 	gfx_SwapDraw();
 } 

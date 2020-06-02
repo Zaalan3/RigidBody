@@ -21,7 +21,7 @@ typedef struct {
 typedef struct { 
 	uint8_t vstart,vend; // vertices of group
 	uint8_t cstart,cend; // constraints that define collision
-	bool free;
+	uint8_t type; 
 	// bounding box
 	int xmin,xmax;
 	int ymin,ymax;
@@ -32,14 +32,19 @@ extern void solveConstraints(void);
 void buildBoundingBoxes(void); 
 
 #define overlap(a,b) ((group[a].xmax>group[b].xmin)&&(group[b].xmax>group[a].xmin)&&(group[a].ymax>group[b].ymin)&&(group[b].ymax>group[a].ymin))
-						
-#define vlen 12
+
+enum OBJECT_TYPE { 
+	TERRAIN = 0, 
+	BOX = 1,
+};
+	
+#define vlen 21
 extern Vertex vert[vlen]; 
 
-#define clen 15
+#define clen 28
 extern Constraint constraint[clen]; 
 
-#define glen 4
+#define glen 7
 extern Group group[glen]; 
 
 #endif
