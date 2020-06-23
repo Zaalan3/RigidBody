@@ -7,7 +7,7 @@ xref _fixedHLmulBC
 xref _normalize
 
 sizeof_constraint equ 12
-sizeof_vert equ 19
+sizeof_vert equ 13
 
 v0 equ ix+0
 v1 equ ix+1
@@ -20,23 +20,18 @@ _solveConstraints:
 	push ix 
 	ld ix,_constraint
 loop: 
-	ld hl,_vert
+	ld iy,_vert
 	ld e,(v0)
 	ld d,sizeof_vert
 	mlt de 
-	add hl,de 
-	push hl 
-	pop iy ; iy = &vert[v0] 
+	add iy,de 
 	
-	or a,a 
-	sbc hl,de 
 	ld d,sizeof_vert
 	ld e,(v1) 
 	mlt de 
-	add hl,de 
 	lea bc,ix+0 ; bc = constraint pointer
-	push hl 
-	pop ix 	; ix = &vert[v1] 
+	ld ix,_vert
+	add ix,de
 	
 	ld hl,(ix+3) 
 	ld de,(iy+3) 
@@ -87,7 +82,7 @@ loop:
 	pop ix 
 	pop iy 
 	
-	ld a,(ix+18)
+	ld a,(ix+12)
 	or a,a 
 	jr z,next
 	
@@ -102,7 +97,7 @@ loop:
 	ld (ix+3),hl 
 	
 next: 
-	ld a,(iy+18) 
+	ld a,(iy+12) 
 	or a,a
 	jr z,loopend 
 	

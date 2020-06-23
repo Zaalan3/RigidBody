@@ -7,7 +7,7 @@
 #include "vectormath.h"
 
 typedef struct { 
-	Vec2 p,x,v; 
+	Vec2 p,x; 
 	bool free; // free vertexes can move, nonfree(fixed) can't.
 } Vertex; 
 
@@ -35,16 +35,17 @@ void buildBoundingBoxes(void);
 
 enum OBJECT_TYPE { 
 	TERRAIN = 0, 
-	BOX = 1,
+	RIGID,
+	FIXED
 };
 	
-#define vlen 21
+#define vlen 22
 extern Vertex vert[vlen]; 
 
-#define clen 28
+#define clen 29
 extern Constraint constraint[clen]; 
 
-#define glen 7
+#define glen 8
 extern Group group[glen]; 
 
 #endif

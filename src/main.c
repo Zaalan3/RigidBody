@@ -4,12 +4,13 @@
 #include <tice.h> 
 #include <graphx.h>
 #include <keypadc.h>
+#include <debug.h>
 
 #include "object.h"
 #include "collision.h"
 #include "vectormath.h" 
 
-#define G 64
+#define G 16
 
 bool drawVerts,drawBBoxes; 
 
@@ -17,7 +18,6 @@ void initialize();
 void step(); 
 void draw();
 
-AxisProjection penAxis; 
 
 #define startTimer() timer_1_Counter = 0; \
 					timer_Control = TIMER1_ENABLE|TIMER1_CPU|TIMER1_UP;
@@ -27,6 +27,8 @@ AxisProjection penAxis;
 void main(void)
 {
     bool current,last;
+	Vec2 n;
+	uint8_t i;
 	initialize(); 
 	kb_Scan();
 	last = false;
@@ -34,10 +36,29 @@ void main(void)
 	while(!kb_IsDown(kb_KeyClear)) { 
 		 
 		current = kb_IsDown(kb_KeyEnter); 
-		startTimer();
+		
+		if(kb_Data[7] & kb_Down) { 
+			n.y = 128; 
+		} else if(kb_Data[7] & kb_Up) { 
+			n.y = -128; 
+		} else { 
+			n.y = 0; 
+		} 
+		
+		if(kb_Data[7] & kb_Right) { 
+			n.x = 128; 
+		} else if(kb_Data[7] & kb_Left) { 
+			n.x = -128; 
+		} else { 
+			n.x = 0; 
+		}
+		 
+		vert[16].p.x += n.x;
+		vert[16].p.y += n.y;
+		
 		//if(current&&(!last)) 
 			step(); 
-		stopTimer();
+		
 		last = current;
 	
 		drawVerts = kb_IsDown(kb_Key1);
@@ -109,36 +130,49 @@ void initialize() {
 
 void step() { 
 	uint8_t i,j;
-	
-	penAxis.depth = 0;
 		
+	//dbg_ClearConsole();
+	
+	startTimer();
+
 	for(i = 0;i<vlen;i++) { 
-		// something like velocity verlet
 		if(vert[i].free) { 
-			vert[i].v.x = (vert[i].p.x - vert[i].x.x  + vert[i].v.x)>>1;
-			vert[i].v.y = (vert[i].p.y - vert[i].x.y + G + vert[i].v.y)>>1;
+			int vx,vy;
+			vx = vert[i].p.x - vert[i].x.x;
+			vy = vert[i].p.y - vert[i].x.y + G;
 			vert[i].x = vert[i].p; 
-			vert[i].p.x += vert[i].v.x;
-			vert[i].p.y += vert[i].v.y;
+			vert[i].p.x += vx;
+			vert[i].p.y += vy;
 		} 
 	}
-	
+		
 	solveConstraints();
 	buildBoundingBoxes();
-	
 	for(i = 0;i < glen-1;i++) { 
+		if(group[i].type == TERRAIN) break;
 		for(j=i+1;j<glen;j++) { 
 			if(overlap(i,j)) { 
 				collideGroups(i,j); 
 			} 
 		} 
 	}
-
+	solveConstraints();
+	
+	stopTimer();
 } 
 
 void draw() { 
 	uint8_t i,time;
+	uint8_t* ptr;
 	gfx_ZeroScreen();
+	
+	for(i = 0;i<clen;i++) { 
+		Vertex v0,v1; 
+		v0 = vert[constraint[i].v0];
+		v1 = vert[constraint[i].v1];
+		gfx_SetColor(0xFF);
+		gfx_Line(fxtoi(v0.p.x)*2,fxtoi(v0.p.y)*2,fxtoi(v1.p.x)*2,fxtoi(v1.p.y)*2); 
+	}
 	
 	if(drawBBoxes) { 
 		for(i = 0;i<glen;i++) { 
@@ -151,14 +185,6 @@ void draw() {
 			gfx_Rectangle(x*2,y*2,w*2,h*2); 
 		}
 	} 
-	
-	for(i = 0;i<clen;i++) { 
-		Vertex v0,v1; 
-		v0 = vert[constraint[i].v0];
-		v1 = vert[constraint[i].v1];
-		gfx_SetColor(0xFF);
-		gfx_Line(fxtoi(v0.p.x)*2,fxtoi(v0.p.y)*2,fxtoi(v1.p.x)*2,fxtoi(v1.p.y)*2); 
-	}
 	
 	if(drawVerts) { 
 		for(i=0;i<vlen;i++) {

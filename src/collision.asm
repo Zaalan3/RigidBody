@@ -8,11 +8,11 @@ xref _vert
 
 sizeof_group equ 17
 sizeof_constraint equ 12 
-sizeof_vert equ 19 
+sizeof_vert equ 13 
 sizeof_axis equ 9
 
-g1 equ ix+9
-g2 equ ix+12 
+g1 equ ix+6
+g2 equ ix+9 
 
 vptr equ ix-33
 
@@ -20,9 +20,9 @@ minc equ ix-30
 minv equ ix-27
 mindepth equ ix-24
 
-tempc equ ix-21
-tempv equ ix-18
-tempdepth equ ix-15 
+tminc equ ix-21
+tminv equ ix-18
+tmindepth equ ix-15 
 
 nx equ ix-12 
 ny equ ix-9
@@ -33,10 +33,7 @@ v0y equ ix-3
 _projectGroupAxis: 
 	ld hl,-33
 	call __frameset
-	
-	ld hl,-1048576
-	ld (mindepth),hl
-	
+		
 	; vptr
 	ld hl,_group
 	ld b,(g1) 
@@ -71,15 +68,20 @@ _projectGroupAxis:
 	ld a,(hl)
 	sub a,d
 	ld b,a
+	
 	; de = constraint pointer 
 	ld e,sizeof_constraint
 	mlt de 
 	ld hl,_constraint 
 	add hl,de 
-	ex de,hl 
+	ex de,hl
 
+	ld hl,-1048576
+	ld (mindepth),hl
+
+	
 loop1: 
-	ld (tempc),de
+	ld (tminc),de
 	ld iy,0 
 	add iy,de 
 	lea de,iy+sizeof_constraint
@@ -125,8 +127,9 @@ loop1:
 	call _fixedHLmulBC
 	pop de 
 	add hl,de 
-	ld (tempdepth),hl 
-	ld (tempv),iy 
+	
+	ld (tmindepth),hl 
+	ld (tminv),iy 
 	lea iy,iy+sizeof_vert
 	pop bc
 
@@ -149,39 +152,43 @@ loop2:
 	add hl,de 
 	
 	; if tempdepth > hl, tempdepth = hl 
-	ld de,(tempdepth)
-	ex de,hl 
+	ex de,hl
+	ld hl,(tmindepth)
 	or a,a 
-	sbc hl,de 
+	sbc hl,de
 	jp m,endloop2
-	ld (tempdepth),de
-	ld (tempv),iy 
-	
+	ld (tmindepth),de
+	ld (tminv),iy 
 endloop2: 
 	pop bc 
 	lea iy,iy+sizeof_vert
 	djnz loop2
 	
 	;if tempdepth > 0 , return 
-	bit 7,(tempdepth+2)
-	jr nz,cmpTempMin 
-	
-	lea hl,tempc
-	ld de,(ix+6) 
-	ld bc,sizeof_axis
-	ldir 
+	ld de,(tmindepth)
+	or a,a 
+	sbc hl,hl 
+	sbc hl,de
+	jr z,cmpTempMin
+	jp p,cmpTempMin
+earlyRet: 	
 	ld sp,ix 
 	pop ix 
+	ld sp,ix 
+	pop ix
 	ret 
 	
 	; if tempdepth > mindepth, min = temp
-cmpTempMin: 
-	ld hl,(tempdepth) 
-	ld de,(mindepth) 
+cmpTempMin:
+	ex de,hl 
+	ld bc,(mindepth) 
 	or a,a 
-	sbc hl,de 
-	jp m,endloop1
-	lea hl,tempc
+	sbc hl,hl 
+	sbc hl,bc 
+	or a,a 
+	sbc hl,de
+	jr c,endloop1
+	lea hl,tminc
 	lea de,minc
 	ld bc,sizeof_axis 
 	ldir 
@@ -193,10 +200,6 @@ endloop1:
 	
 return: 	
 	lea hl,minc
-	ld de,(ix+6)
-	ld bc,sizeof_axis 
-	ldir
-	
 	ld sp,ix 
 	pop ix 
 	ret 

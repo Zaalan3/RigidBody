@@ -1,8 +1,10 @@
 xdef _fxMul 
+xdef _fxDiv
 xdef _fxtoi 
 xdef _sqrtInt 
 xdef _normalize
 xdef _fixedHLmulBC
+xdef _fixedHLdivBC
 
 _fxtoi: 
 	pop bc 
@@ -47,7 +49,7 @@ noswapHLBC:
 	ld (MultSMC),a
 	or a,a 
 	sbc hl,hl 
-	
+
 	ld a,b 
 	
 	rla 
@@ -160,6 +162,62 @@ MultSMC: or a,a
 	sbc hl,hl 
 	sbc hl,de 
 	ret
+	
+	
+_fxDiv:
+	pop de 
+	pop hl 
+	pop bc 
+	push de
+	push de
+	push de
+_fixedHLdivBC: 
+	add hl,hl
+	add hl,hl
+	add hl,hl
+	add hl,hl
+	add hl,hl
+	add hl,hl
+	add hl,hl
+	add hl,hl
+	ex	de,hl
+	xor	a,a
+	sbc	hl,hl
+	sbc	hl,bc
+	jp	p,next0
+	push	hl
+	pop	bc
+	inc	a
+next0:
+	or	a,a
+	sbc	hl,hl
+	sbc	hl,de
+	jp	m,next1
+	ex	de,hl
+	inc	a
+next1:
+	add	hl,de
+	rra
+	ld	a,24
+loop:
+	ex	de,hl
+	adc	hl,hl
+	ex	de,hl
+	adc	hl,hl
+	add	hl,bc
+	jr	c,spill
+	sbc	hl,bc
+spill:
+	dec	a
+	jr	nz,loop
+
+	ex	de,hl
+	adc	hl,hl
+	ret	c
+	ex	de,hl
+	sbc	hl,hl
+	sbc	hl,de
+	ret
 
 	
 ;https://www.cemetech.net/forum/viewtopic.php?p=253204
@@ -238,32 +296,32 @@ DivideDEBC:
 	xor	a,a
 	sbc	hl,hl
 	sbc	hl,bc
-	jp	p,next0
+	jp	p,nnext0
 	push	hl
 	pop	bc
 	inc	a
-next0:
+nnext0:
 	or	a,a
 	sbc	hl,hl
 	sbc	hl,de
-	jp	m,next1
+	jp	m,nnext1
 	ex	de,hl
 	inc	a
-next1:
+nnext1:
 	add	hl,de
 	rra
 	ld	a,24
-loop:
+nloop:
 	ex	de,hl
 	adc	hl,hl
 	ex	de,hl
 	adc	hl,hl
 	add	hl,bc
-	jr	c,spill
+	jr	c,nspill
 	sbc	hl,bc
-spill:
+nspill:
 	dec	a
-	jr	nz,loop
+	jr	nz,nloop
 
 	ex	de,hl
 	adc	hl,hl

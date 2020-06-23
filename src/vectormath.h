@@ -25,4 +25,6 @@ void initFxMul(void);
  
 int fxMul(int x,int y); 
 
+int fxDiv(int num,int dem); 
+
 #endif
