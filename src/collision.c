@@ -34,9 +34,7 @@ void collideGroups(uint8_t g1,uint8_t g2) {
 		pg = g1; 
 		lg = g2;
 	} 
-	
-	//dbg_sprintf(dbgout,"Collision between %u and %u. Depth: %d\n",g1,g2,minaxis.depth);
-	
+		
 	p = minaxis.v; 
 	v0 = &vert[minaxis.c->v0];
 	v1 = &vert[minaxis.c->v1];
@@ -77,42 +75,3 @@ void collideGroups(uint8_t g1,uint8_t g2) {
 		}
 	}
 }
-
-/*
-AxisProjection projectGroupAxis(uint8_t g1,uint8_t g2) { 
-	uint8_t i,c;
-	int depth;
-	AxisProjection a;
-	Vec2 d,n;
-	Vec2 v0,v;
-	AxisProjection minax = {0,0,-8388608};
-	
-	for(c = group[g2].cstart;c<=group[g2].cend;c++) {
-		v0 = vert[constraint[c].v0].p;
-		v = vert[group[g1].vstart].p;
-		
-		n.x = constraint[c].dir.y;
-		n.y = 0-constraint[c].dir.x;
-		
-		a.c = &constraint[c];
-		a.v = &vert[group[g1].vstart];
-		a.depth = fxMul(v.x - v0.x,n.x) + fxMul(v.y - v0.y,n.y);
-		
-		for(i=group[g1].vstart;i<=group[g1].vend;i++) {
-			v = vert[i].p;
-			depth = fxMul(v.x - v0.x,n.x) + fxMul(v.y - v0.y,n.y);
-			if(depth < a.depth) {
-				a.v = &vert[i];
-				a.depth = depth;
-			}
-		}
-		if(a.depth>0) {
-			minax = a;
-			break;
-		} else if ( minax.depth < a.depth  ) {
-			minax = a;
-		}
-	}
-	return minax;
-} 
-*/

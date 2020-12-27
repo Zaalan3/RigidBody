@@ -1,10 +1,11 @@
-xdef _solveConstraints
+public _solveConstraints
 
-xref _constraint 
-xref _vert 
+extern _constraint 
+extern _vert 
 
-xref _fixedHLmulBC
-xref _normalize
+extern _fixedHLmulBC
+extern _normalize
+extern Sqrt24
 
 sizeof_constraint equ 12
 sizeof_vert equ 13
@@ -55,9 +56,82 @@ loop:
 	push iy 
 	push bc 
 	
-	pea dirx 
-	call _normalize 
-	pop de  
+	lea iy,dirx 
+	
+normalize: 	
+	ld bc,(iy+0) 
+	or a,a 
+	sbc hl,hl 
+	add hl,bc 
+	call _fixedHLmulBC 
+	push hl 
+	ld bc,(iy+3) 
+	or a,a 
+	sbc hl,hl 
+	add hl,bc
+	call _fixedHLmulBC 
+	pop de 
+	add hl,de 
+	push iy 
+	call Sqrt24
+	add hl,hl
+	add hl,hl
+	add hl,hl
+	add hl,hl
+	pop iy 	
+	
+	push hl 
+	push hl 
+	pop bc 
+	ld de,65536 
+DivideDEBC:
+	xor	a,a
+	sbc	hl,hl
+	sbc	hl,bc
+	jp	p,nnext0
+	push	hl
+	pop	bc
+	inc	a
+nnext0:
+	or	a,a
+	sbc	hl,hl
+	sbc	hl,de
+	jp	m,nnext1
+	ex	de,hl
+	inc	a
+nnext1:
+	add	hl,de
+	rra
+	ld	a,24
+nloop:
+	ex	de,hl
+	adc	hl,hl
+	ex	de,hl
+	adc	hl,hl
+	add	hl,bc
+	jr	c,nspill
+	sbc	hl,bc
+nspill:
+	dec	a
+	jr	nz,nloop
+
+	ex	de,hl
+	adc	hl,hl
+	jr	c,enddiv
+	ex	de,hl
+	sbc	hl,hl
+	sbc	hl,de
+
+enddiv: 	
+	push hl 
+	ld	bc,(iy+0) 
+	call _fixedHLmulBC
+	ld (iy+0),hl 
+	pop hl 
+	ld bc,(iy+3) 
+	call _fixedHLmulBC
+	ld (iy+3),hl 
+	pop hl 
 	
 	ld de,(len) 
 	or a,a 

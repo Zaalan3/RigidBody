@@ -18,7 +18,6 @@ void initialize();
 void step(); 
 void draw();
 
-
 #define startTimer() timer_1_Counter = 0; \
 					timer_Control = TIMER1_ENABLE|TIMER1_CPU|TIMER1_UP;
 #define stopTimer() timer_Control = TIMER1_DISABLE; 
@@ -26,43 +25,17 @@ void draw();
 
 void main(void)
 {
-    bool current,last;
-	Vec2 n;
-	uint8_t i;
+
 	initialize(); 
 	kb_Scan();
-	last = false;
 	
 	while(!kb_IsDown(kb_KeyClear)) { 
-		 
-		current = kb_IsDown(kb_KeyEnter); 
-		
-		if(kb_Data[7] & kb_Down) { 
-			n.y = 128; 
-		} else if(kb_Data[7] & kb_Up) { 
-			n.y = -128; 
-		} else { 
-			n.y = 0; 
-		} 
-		
-		if(kb_Data[7] & kb_Right) { 
-			n.x = 128; 
-		} else if(kb_Data[7] & kb_Left) { 
-			n.x = -128; 
-		} else { 
-			n.x = 0; 
-		}
-		 
-		vert[16].p.x += n.x;
-		vert[16].p.y += n.y;
-		
-		//if(current&&(!last)) 
-			step(); 
-		
-		last = current;
-	
+
+		step(); 
+			
 		drawVerts = kb_IsDown(kb_Key1);
 		drawBBoxes = kb_IsDown(kb_Key2);
+		
 		draw(); 
 		kb_Scan();
 	} 
@@ -76,6 +49,7 @@ void initialize() {
 	gfx_SetTextFGColor(0xFE);
 	gfx_ZeroScreen(); 
 	gfx_SetDrawBuffer(); 
+	gfx_ZeroScreen();
 	
 	drawVerts = false; 
 	drawBBoxes = false; 
@@ -156,14 +130,11 @@ void step() {
 			} 
 		} 
 	}
-	solveConstraints();
-	
 	stopTimer();
 } 
 
 void draw() { 
 	uint8_t i,time;
-	uint8_t* ptr;
 	gfx_ZeroScreen();
 	
 	for(i = 0;i<clen;i++) { 
@@ -171,7 +142,7 @@ void draw() {
 		v0 = vert[constraint[i].v0];
 		v1 = vert[constraint[i].v1];
 		gfx_SetColor(0xFF);
-		gfx_Line(fxtoi(v0.p.x)*2,fxtoi(v0.p.y)*2,fxtoi(v1.p.x)*2,fxtoi(v1.p.y)*2); 
+		gfx_Line(fxtoi(v0.p.x),fxtoi(v0.p.y),fxtoi(v1.p.x),fxtoi(v1.p.y)); 
 	}
 	
 	if(drawBBoxes) { 
@@ -182,14 +153,14 @@ void draw() {
 			w = fxtoi(group[i].xmax) - x;
 			h = fxtoi(group[i].ymax) - y;
 			gfx_SetColor(0xE8);
-			gfx_Rectangle(x*2,y*2,w*2,h*2); 
+			gfx_Rectangle(x,y,w,h); 
 		}
 	} 
 	
 	if(drawVerts) { 
 		for(i=0;i<vlen;i++) {
 			gfx_SetColor(0xC6); 
-			gfx_Circle(fxtoi(vert[i].p.x)*2,fxtoi(vert[i].p.y)*2,4); 
+			gfx_Circle(fxtoi(vert[i].p.x),fxtoi(vert[i].p.y),4); 
 		} 
 	}
 		 

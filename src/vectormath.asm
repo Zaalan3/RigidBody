@@ -1,10 +1,11 @@
-xdef _fxMul 
-xdef _fxDiv
-xdef _fxtoi 
-xdef _sqrtInt 
-xdef _normalize
-xdef _fixedHLmulBC
-xdef _fixedHLdivBC
+public _fxMul 
+public _fxDiv
+public _fxtoi 
+public _sqrtInt 
+public _normalize
+public _fixedHLmulBC
+public _fixedHLdivBC
+public Sqrt24
 
 _fxtoi: 
 	pop bc 
@@ -285,12 +286,11 @@ _normalize:
 	add hl,hl
 	add hl,hl
 	add hl,hl
-	pop iy 
+	pop iy 	
 	
 	push hl 
 	push hl 
 	pop bc 
-	
 	ld de,65536 
 DivideDEBC:
 	xor	a,a

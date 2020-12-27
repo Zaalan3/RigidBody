@@ -1,10 +1,10 @@
-xdef _projectGroupAxis
+public _projectGroupAxis
 
-xref __frameset
-xref _fixedHLmulBC
-xref _constraint
-xref _group
-xref _vert
+extern __frameset
+extern _fixedHLmulBC
+extern _constraint
+extern _group
+extern _vert
 
 sizeof_group equ 17
 sizeof_constraint equ 12 

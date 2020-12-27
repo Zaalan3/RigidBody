@@ -36,7 +36,7 @@ void buildBoundingBoxes(void);
 enum OBJECT_TYPE { 
 	TERRAIN = 0, 
 	RIGID,
-	FIXED
+	BALL
 };
 	
 #define vlen 22
